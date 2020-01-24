@@ -2,13 +2,16 @@ import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 
 case class GameBoard(deck: Deck, matchCondition: CardMatchCondition, system: ActorSystem) extends Actor {
 
-  type PlayerId = String
   private val playerAId = "A"
   private val playerBId = "B"
+  //shuffle the deck, then evenly dealt cards to players
   private val (deckA, deckB) = deck.shuffle().cards.zipWithIndex.partition{ case(_, i) => i % 2 == 0 }
   private val playerAActor: ActorRef = system.actorOf(Props(Player(playerAId, Deck(deckA.map(_._1)), matchCondition: CardMatchCondition)))
   private val playerBActor = system.actorOf(Props(Player(playerBId, Deck(deckB.map(_._1)), matchCondition: CardMatchCondition)))
 
+  //`isReady` indicates this player has received the card for the current round, and it's ready for the next round. This is
+  // to avoid any race condition between rounds.
+  //`winningDeck` stores the cards it won so far
   case class PlayerState(isReady: Boolean, winningDeck: Deck) {
     def becomeReady(): PlayerState = this.copy(isReady = true)
     def becomeNotReady(): PlayerState = this.copy(isReady = false)
@@ -28,23 +31,23 @@ case class GameBoard(deck: Deck, matchCondition: CardMatchCondition, system: Act
       val message = PlayedACard(c)
       println(s"Player $id played $c")
       currentFaceUpDeckOnBoard = currentFaceUpDeckOnBoard.addCard(c)
-      //PlayerA will still have some advantage here, but making it fai  erer is too difficult.
+      //PlayerA will still have some advantage here, but making it fairer is too difficult.
       playerAActor ! message
       playerBActor ! message
     case ConfirmReceived(id) =>
-      updatePlayerState(id)
-      validateStateAndStartNextRound()
+      playerBecomeReady(id)
+      startNextRoundIfBothPlayersAreReady()
     case SnapShout(id) =>
       println(s"Player $id called snap")
       if (currentFaceUpDeckOnBoard.topTwoCardsAreTheSame(matchCondition)) {
         println(s"Player $id is winning ${currentFaceUpDeckOnBoard.size} cards from current round")
         calculateNewState(id)(state => state.becomeReady().addToWinningDeck(currentFaceUpDeckOnBoard))
-        validateStateAndStartNextRound()
+        startNextRoundIfBothPlayersAreReady()
         currentFaceUpDeckOnBoard = Deck.empty()
       } else if (currentFaceUpDeckOnBoard.cards.isEmpty){
         println(s"Player $id called snap, but too late")
-        calculateNewState(id)(state => state.becomeReady())
-        validateStateAndStartNextRound()
+        playerBecomeReady(id)
+        startNextRoundIfBothPlayersAreReady()
       } else {
         println("Error: Top two cards do not match, player cheating (some race condition)")
       }
@@ -80,7 +83,7 @@ case class GameBoard(deck: Deck, matchCondition: CardMatchCondition, system: Act
     round += 1
   }
 
-  private def validateStateAndStartNextRound(): Unit = {
+  private def startNextRoundIfBothPlayersAreReady(): Unit = {
     if (playerAState.isReady && playerBState.isReady) {
       playerAState = playerAState.becomeNotReady()
       playerBState = playerBState.becomeNotReady()
@@ -88,7 +91,7 @@ case class GameBoard(deck: Deck, matchCondition: CardMatchCondition, system: Act
     }
   }
 
-  private def updatePlayerState(id: String): Unit = {
+  private def playerBecomeReady(id: String): Unit = {
     calculateNewState(id)(state => state.becomeReady())
   }
 }

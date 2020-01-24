@@ -76,19 +76,6 @@ class DeckTest extends AnyFreeSpec with Matchers {
       newDeck.topTwoCardsAreTheSame(matchingCondition) shouldBe false
     }
 
-    "don't match the condition" - {
-      val card1 = Card(CardSuit.Clubs, CardValue.One)
-      val card2 = Card(CardSuit.Diamonds, CardValue.Ten)
-      val card3 = Card(CardSuit.Diamonds, CardValue.Seven)
-      val matchingCondition = MatchSuit
-
-      val newDeck = Deck.empty().addCard(card3)
-        .addCard(card2)
-        .addCard(card1)
-
-      newDeck.topTwoCardsAreTheSame(matchingCondition) shouldBe false
-    }
-
     "not empty card" - {
       val card1 = Card(CardSuit.Clubs, CardValue.One)
       val matchingCondition = MatchSuit

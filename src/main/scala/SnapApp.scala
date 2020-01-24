@@ -7,7 +7,7 @@ object SnapApp extends App {
 
   println("Please enter the total number of decks")
   val totalNumberOfDecks = userInputANumber()
-  println(s"Total number of cards for this game is $totalNumberOfDecks")
+  println(s"Total number of decks for this game is $totalNumberOfDecks")
 
   val cardMatchCondition = userInputCardMatchCondition()
   println(s"Cards will be matched $cardMatchCondition")
