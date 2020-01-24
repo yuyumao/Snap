@@ -1,5 +1,6 @@
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 
+//Coordinating both players, keep track of the cards the board
 case class GameBoard(deck: Deck, matchCondition: CardMatchCondition, system: ActorSystem) extends Actor {
 
   private val playerAId = "A"

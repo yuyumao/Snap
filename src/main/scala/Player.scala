@@ -18,6 +18,7 @@ case class Player(id: String, private var deck: Deck, matchCondition: CardMatchC
         lastCardOnBoard = Some(playedCard)
       }
   }
+
   private def playACard(): (Message, Deck) = {
     val (maybeCard, nextDeck) = deck.playTheTopCard()
     maybeCard.map { card =>
