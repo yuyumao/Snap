@@ -9,12 +9,21 @@ case class Deck(cards: List[Card]) {
   }
 
   def combine(otherDeck: Deck): Deck = {
-    Deck(cards ++: otherDeck.cards)
+    Deck(cards.appendedAll(otherDeck.cards))
   }
 
   def addCard(card: Card): Deck = {
     Deck(card :: cards)
   }
+
+  def topTwoCardsAreTheSame(matchCondition: CardMatchCondition): Boolean = {
+    cards match {
+      case head1 :: head2 :: _ if matchCondition.matching(head1, head2) => true
+      case _ => false
+    }
+  }
+
+  def size: Int = cards.size
 }
 
 case object Deck {

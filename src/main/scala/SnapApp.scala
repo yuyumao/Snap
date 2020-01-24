@@ -1,3 +1,5 @@
+import akka.actor.{ActorSystem, Props}
+
 import scala.util.Try
 
 object SnapApp extends App {
@@ -10,8 +12,9 @@ object SnapApp extends App {
   val cardMatchCondition = userInputCardMatchCondition()
   println(s"Cards will be matched $cardMatchCondition")
 
-  val gameBoard = GameBoard(Deck.createFullDecks(totalNumberOfDecks), cardMatchCondition)
-  
+  val system = ActorSystem("SnapApp")
+  val gameBoard = system.actorOf(Props(GameBoard(Deck.createFullDecks(totalNumberOfDecks), cardMatchCondition, system)))
+
 
   def userInputANumber(): Int = {
     Try(scala.io.StdIn.readLine().toInt).getOrElse {
