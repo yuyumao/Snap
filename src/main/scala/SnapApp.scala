@@ -13,7 +13,7 @@ object SnapApp extends App {
   println(s"Cards will be matched $cardMatchCondition")
 
   val system = ActorSystem("SnapApp")
-  val gameBoard = system.actorOf(Props(GameBoard(Deck.createFullDecks(totalNumberOfDecks), cardMatchCondition, system)))
+  val gameBoard = system.actorOf(Props(GameBoardActor(Deck.createFullDecks(totalNumberOfDecks), cardMatchCondition, system)))
 
 
   def userInputANumber(): Int = {
